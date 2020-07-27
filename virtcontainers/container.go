@@ -1120,8 +1120,12 @@ func (c *Container) stop(force bool) error {
 		return err
 	}
 
-	if err := bindUnmountContainerRootfs(c.ctx, getMountPath(c.sandbox.id), c.id); err != nil && !force {
-		return err
+	// umount container rootfs dir only if container use 9p
+	// to bind mount host container rootfs to 9p shared dir
+	if c.state.BlockDeviceID == "" {
+		if err := bindUnmountContainerRootfs(c.ctx, getMountPath(c.sandbox.id), c.id); err != nil && !force {
+			return err
+		}
 	}
 
 	if err := c.detachDevices(); err != nil && !force {
